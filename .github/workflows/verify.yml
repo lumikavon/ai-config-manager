@@ -1,0 +1,44 @@
+name: verify
+on:
+  push:
+  pull_request:
+jobs:
+  core-and-web:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: dtolnay/rust-toolchain@1.90.0
+        with:
+          components: rustfmt, clippy
+      - run: sudo apt-get update && sudo apt-get install -y libdbus-1-dev pkg-config
+      - run: npm ci
+      - run: npm test -- --run
+      - run: npm run build
+      - run: cargo test --locked
+      - run: cargo test --locked --manifest-path=src-tauri/settings-tests/Cargo.toml
+      - run: cargo fmt --all -- --check
+  native-build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022, macos-14, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: dtolnay/rust-toolchain@1.90.0
+      - if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf libdbus-1-dev
+      - run: npm ci
+      - run: npm run tauri -- build --no-bundle
+      - uses: actions/upload-artifact@v4
+        with:
+          name: executable-${{ matrix.os }}
+          path: target/release/ai-config-manager*

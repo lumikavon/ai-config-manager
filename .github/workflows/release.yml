@@ -1,0 +1,77 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - uses: dtolnay/rust-toolchain@1.90.0
+        with:
+          components: rustfmt
+      - run: sudo apt-get update && sudo apt-get install -y libdbus-1-dev pkg-config
+      - run: npm ci
+      - run: npm test -- --run
+      - run: npm run build
+      - run: cargo test --locked
+      - run: cargo test --locked --manifest-path=src-tauri/settings-tests/Cargo.toml
+      - run: cargo fmt --all -- --check
+
+  publish:
+    needs: verify
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-2022
+            bundles: msi,nsis
+          - os: macos-14
+            bundles: app,dmg
+          - os: ubuntu-24.04
+            bundles: deb,appimage
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - uses: dtolnay/rust-toolchain@1.90.0
+      - if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            libdbus-1-dev
+      - run: npm ci
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: "AI Config Manager ${{ github.ref_name }}"
+          releaseBody: |
+            Desktop builds for Windows, macOS (Apple silicon) and Linux.
+
+            These installers are **unsigned**; the operating system may warn
+            about an unidentified developer. The app stores credentials in the
+            OS keychain and never calls a model API.
+          releaseDraft: false
+          prerelease: false
+          args: --bundles ${{ matrix.bundles }}

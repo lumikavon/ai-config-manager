@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main",
+  "description": "Only local main-window events and narrowly scoped application commands. No shell, filesystem or remote IPC.",
+  "windows": ["main"],
+  "permissions": ["core:event:allow-listen", "core:event:allow-unlisten", "allow-config-read", "allow-config-save", "allow-config-check", "allow-history-list", "allow-settings-read", "allow-settings-save", "allow-autostart-set", "allow-window-hide", "allow-window-control"]
+}

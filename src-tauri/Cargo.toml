@@ -1,0 +1,27 @@
+[package]
+name = "ai-config-manager"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.90"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[features]
+# Required for production builds: tauri's build script treats a build without this
+# feature as a dev build and loads `build.devUrl` instead of the bundled frontend.
+# `npm run tauri -- build` enables it automatically; a bare `cargo build --release`
+# must pass `--features custom-protocol` or the binary will point at the dev server.
+custom-protocol = ["tauri/custom-protocol"]
+
+[dependencies]
+ai-config-core = { path = "../crates/core" }
+tauri = { version = "2", features = ["tray-icon", "image-png"] }
+tauri-plugin-autostart = "2"
+tauri-plugin-single-instance = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tempfile = "3"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+zbus = { version = "4", features = ["blocking"] }
