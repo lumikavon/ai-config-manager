@@ -678,6 +678,7 @@ export default function App() {
           {t.local}
         </div>
       </aside>
+      <div className="content-scroll">
       <main>
         <header>
           <div className="eyebrow">{t[page]}</div>
@@ -1039,6 +1040,7 @@ export default function App() {
           </>
         )}
       </main>
+      </div>
       {confirmation && (
         <dialog
           ref={dialogRef}

@@ -54,7 +54,7 @@ dependencies = [
 
 [[package]]
 name = "ai-config-cli"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "ai-config-core",
  "serde_json",
@@ -63,7 +63,7 @@ dependencies = [
 
 [[package]]
 name = "ai-config-core"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "aes-gcm",
  "base64 0.22.1",
@@ -85,7 +85,7 @@ dependencies = [
 
 [[package]]
 name = "ai-config-manager"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "ai-config-core",
  "serde",
